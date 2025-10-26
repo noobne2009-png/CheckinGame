@@ -50,11 +50,27 @@
     <div class="result" id="result"></div>
 
     <script>
+      // Tạo deviceId duy nhất và lưu trong localStorage
+      function getDeviceId() {
+        let id = localStorage.getItem("deviceId");
+        if (!id) {
+          id = "dev-" + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem("deviceId", id);
+        }
+        return id;
+      }
+
       async function checkIn() {
-        const res = await fetch("/checkin");
+        const resultDiv = document.getElementById("result");
+
+        const res = await fetch("/checkin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: getDeviceId() }),
+        });
+
         const data = await res.json();
 
-        const resultDiv = document.getElementById("result");
         if (!data.ok) {
           resultDiv.innerHTML = `<p style="color: red;">${data.message}</p>`;
           return;
