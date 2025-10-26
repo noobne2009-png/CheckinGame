@@ -14,6 +14,7 @@
       }
       h1 {
         color: #00ffff;
+        text-shadow: 0 0 15px #00ffff;
       }
       button {
         background: #00bfff;
@@ -23,9 +24,11 @@
         border-radius: 8px;
         cursor: pointer;
         font-size: 18px;
+        transition: 0.2s;
       }
       button:hover {
         background: #0080ff;
+        box-shadow: 0 0 15px #00ffff;
       }
       .result {
         margin-top: 30px;
@@ -46,11 +49,10 @@
   <body>
     <h1>💎 Điểm danh nhận tài khoản game random</h1>
     <button onclick="checkIn()">✅ Điểm danh ngay</button>
-
     <div class="result" id="result"></div>
 
     <script>
-      // Tạo deviceId duy nhất và lưu trong localStorage
+      // ✅ Tạo deviceId duy nhất
       function getDeviceId() {
         let id = localStorage.getItem("deviceId");
         if (!id) {
@@ -60,6 +62,7 @@
         return id;
       }
 
+      // ✅ Gửi yêu cầu điểm danh
       async function checkIn() {
         const resultDiv = document.getElementById("result");
 
@@ -72,7 +75,7 @@
         const data = await res.json();
 
         if (!data.ok) {
-          resultDiv.innerHTML = `<p style="color: red;">${data.message}</p>`;
+          resultDiv.innerHTML = `<p style="color:red;">${data.message}</p>`;
           return;
         }
 
@@ -80,7 +83,9 @@
           <p>🎁 Tài khoản của bạn:</p>
           <div class="acc-box" id="accBox">${data.account}</div>
           <button onclick="copyAcc()">📋 Sao chép</button>
-          <p>Tham gia nhóm Telegram: <a href="${data.telegram}" target="_blank">${data.telegram}</a></p>
+          <p>Tham gia nhóm Telegram: 
+            <a href="${data.telegram}" target="_blank">${data.telegram}</a>
+          </p>
         `;
       }
 

@@ -12,11 +12,21 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// ✅ Lấy IP thật (Render hoặc local)
+function getClientIP(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.connection.remoteAddress ||
+    "unknown"
+  );
+}
+
+// ✅ Đọc/ghi log điểm danh
 function loadCheckins() {
   try {
     if (!fs.existsSync(CHECKIN_LOG)) return {};
     return JSON.parse(fs.readFileSync(CHECKIN_LOG, "utf8"));
-  } catch (e) {
+  } catch {
     return {};
   }
 }
@@ -25,21 +35,23 @@ function saveCheckins(data) {
   fs.writeFileSync(CHECKIN_LOG, JSON.stringify(data, null, 2), "utf8");
 }
 
+// ✅ API điểm danh
 app.post("/checkin", (req, res) => {
   const today = new Date().toDateString();
-  const deviceId = req.body.deviceId;
-
-  if (!deviceId) {
-    return res.json({ ok: false, message: "Thiếu thông tin thiết bị!" });
-  }
+  const deviceId = req.body.deviceId || "unknown";
+  const ip = getClientIP(req);
 
   let checkins = loadCheckins();
 
-  // Nếu thiết bị này đã điểm danh hôm nay
-  if (checkins[deviceId] === today) {
+  // Khóa duy nhất (deviceId + IP)
+  const key = `${ip}-${deviceId}`;
+
+  // Nếu đã điểm danh hôm nay
+  if (checkins[key] === today) {
     return res.json({
       ok: false,
-      message: "❌ Bạn đã điểm danh hôm nay rồi! Hãy quay lại vào ngày mai nhé.",
+      message:
+        "❌ Bạn đã điểm danh hôm nay rồi! Hãy quay lại vào ngày mai nhé.",
     });
   }
 
@@ -61,8 +73,8 @@ app.post("/checkin", (req, res) => {
       fs.writeFileSync(ACC_FILE, lines.join("\n"), "utf8");
     }
 
-    // Ghi lại thiết bị đã điểm danh
-    checkins[deviceId] = today;
+    // Lưu lại log checkin
+    checkins[key] = today;
     saveCheckins(checkins);
 
     res.json({
@@ -77,11 +89,10 @@ app.post("/checkin", (req, res) => {
   }
 });
 
-// Tự động reset log mỗi ngày
+// ✅ Tự reset log mỗi ngày
 setInterval(() => {
   const today = new Date().toDateString();
   let checkins = loadCheckins();
-
   for (let key in checkins) {
     if (checkins[key] !== today) delete checkins[key];
   }
