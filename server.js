@@ -4,7 +4,9 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-const REMOVE_AFTER_SERVE = true;
+
+// ✅ Cấu hình
+const REMOVE_AFTER_SERVE = true; // Có xóa acc sau khi phát không
 const ACC_FILE = path.join(__dirname, "accounts.txt");
 const CHECKIN_LOG = path.join(__dirname, "checkins.json");
 
@@ -12,7 +14,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Lấy IP thật (Render hoặc local)
+// ✅ Hàm lấy IP thật (Render hoặc local)
 function getClientIP(req) {
   return (
     req.headers["x-forwarded-for"]?.split(",")[0] ||
@@ -21,7 +23,7 @@ function getClientIP(req) {
   );
 }
 
-// ✅ Đọc/ghi log điểm danh
+// ✅ Đọc & ghi file checkin
 function loadCheckins() {
   try {
     if (!fs.existsSync(CHECKIN_LOG)) return {};
@@ -68,12 +70,13 @@ app.post("/checkin", (req, res) => {
     let randomIndex = Math.floor(Math.random() * lines.length);
     let acc = lines[randomIndex].trim();
 
+    // Xóa acc sau khi phát (nếu bật)
     if (REMOVE_AFTER_SERVE) {
       lines.splice(randomIndex, 1);
       fs.writeFileSync(ACC_FILE, lines.join("\n"), "utf8");
     }
 
-    // Lưu lại log checkin
+    // Ghi lại thiết bị đã điểm danh
     checkins[key] = today;
     saveCheckins(checkins);
 
@@ -89,7 +92,7 @@ app.post("/checkin", (req, res) => {
   }
 });
 
-// ✅ Tự reset log mỗi ngày
+// ✅ Tự động dọn log cũ mỗi giờ
 setInterval(() => {
   const today = new Date().toDateString();
   let checkins = loadCheckins();
@@ -99,5 +102,6 @@ setInterval(() => {
   saveCheckins(checkins);
 }, 60 * 60 * 1000);
 
+// ✅ Khởi động server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

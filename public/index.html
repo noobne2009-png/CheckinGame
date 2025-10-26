@@ -49,10 +49,11 @@
   <body>
     <h1>💎 Điểm danh nhận tài khoản game random</h1>
     <button onclick="checkIn()">✅ Điểm danh ngay</button>
+
     <div class="result" id="result"></div>
 
     <script>
-      // ✅ Tạo deviceId duy nhất
+      // ✅ Tạo ID thiết bị duy nhất
       function getDeviceId() {
         let id = localStorage.getItem("deviceId");
         if (!id) {
@@ -65,6 +66,7 @@
       // ✅ Gửi yêu cầu điểm danh
       async function checkIn() {
         const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `<p>⏳ Đang kiểm tra...</p>`;
 
         const res = await fetch("/checkin", {
           method: "POST",
@@ -89,6 +91,7 @@
         `;
       }
 
+      // ✅ Sao chép tài khoản
       function copyAcc() {
         const text = document.getElementById("accBox").innerText;
         navigator.clipboard.writeText(text);
