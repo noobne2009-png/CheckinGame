@@ -1,95 +1,78 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Điểm danh nhận acc</title>
-<style>
-body {
-  background: linear-gradient(135deg, #111, #222);
-  color: #fff;
-  font-family: "Segoe UI", sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  margin: 0;
-}
-button {
-  background: #00bcd4;
-  color: #fff;
-  padding: 15px 30px;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover {
-  background: #0097a7;
-}
-#result {
-  margin-top: 25px;
-  background: rgba(0,0,0,0.4);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  width: 320px;
-  max-width: 90%;
-}
-a {
-  color: #00e676;
-  text-decoration: none;
-}
-.copy-btn {
-  background: #ff4081;
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  padding: 6px 12px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-</style>
-</head>
-<body>
-  <h1>🔥 Điểm Danh Nhận Acc Random 🔥</h1>
-  <button id="checkinBtn">Điểm danh ngay</button>
-  <div id="result"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Điểm danh nhận tài khoản game</title>
+    <style>
+      body {
+        background: linear-gradient(135deg, #0d1117, #1a1f2b);
+        color: white;
+        font-family: "Segoe UI", sans-serif;
+        text-align: center;
+        padding: 40px;
+      }
+      h1 {
+        color: #00ffff;
+      }
+      button {
+        background: #00bfff;
+        color: white;
+        padding: 15px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+      }
+      button:hover {
+        background: #0080ff;
+      }
+      .result {
+        margin-top: 30px;
+        font-size: 18px;
+      }
+      .acc-box {
+        background: #111;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-family: monospace;
+      }
+      a {
+        color: #00ffff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>💎 Điểm danh nhận tài khoản game random</h1>
+    <button onclick="checkIn()">✅ Điểm danh ngay</button>
 
-<script>
-const btn = document.getElementById("checkinBtn");
-const result = document.getElementById("result");
+    <div class="result" id="result"></div>
 
-btn.onclick = async () => {
-  btn.disabled = true;
-  btn.innerText = "Đang điểm danh...";
-  try {
-    const res = await fetch("/api/checkin", { method: "POST" });
-    const data = await res.json();
-    if (!data.ok) {
-      result.innerHTML = `<p>❌ ${data.message}</p>`;
-    } else {
-      const [user, pass] = data.account.split(":");
-      result.innerHTML = `
-        <p>🎁 Tài khoản của bạn:</p>
-        <p><b>${user}</b> | <b>${pass}</b></p>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${user}:${pass}')">📋 Copy</button>
-        <p><a href="${data.telegram}" target="_blank">Tham gia nhóm Telegram</a></p>
-        ${
-          data.removed
-            ? `<p style="color:#4caf50;">✅ Tài khoản đã lấy và bị xoá khỏi danh sách!</p>`
-            : ""
+    <script>
+      async function checkIn() {
+        const res = await fetch("/checkin");
+        const data = await res.json();
+
+        const resultDiv = document.getElementById("result");
+        if (!data.ok) {
+          resultDiv.innerHTML = `<p style="color: red;">${data.message}</p>`;
+          return;
         }
-      `;
-    }
-  } catch (err) {
-    result.innerHTML = `<p>❌ Lỗi: ${err.message}</p>`;
-  }
-  btn.disabled = false;
-  btn.innerText = "Điểm danh ngay";
-};
-</script>
-</body>
+
+        resultDiv.innerHTML = `
+          <p>🎁 Tài khoản của bạn:</p>
+          <div class="acc-box" id="accBox">${data.account}</div>
+          <button onclick="copyAcc()">📋 Sao chép</button>
+          <p>Tham gia nhóm Telegram: <a href="${data.telegram}" target="_blank">${data.telegram}</a></p>
+        `;
+      }
+
+      function copyAcc() {
+        const text = document.getElementById("accBox").innerText;
+        navigator.clipboard.writeText(text);
+        alert("✅ Đã sao chép tài khoản!");
+      }
+    </script>
+  </body>
 </html>
